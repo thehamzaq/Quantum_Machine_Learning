@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --account=def-sanders
+#SBATCH --ntask=12
+#SBATCH --time=00:01:00
+
+echo "Starting run at: $(date)"
+
+mpirun ./src/phase_estimation test.cfg
+
+#mpirun valgrind --suppressions=val_supp.supp --suppressions=val2.supp --gen-suppressions=all ./src/phase_estimation 1>valgrind.out 2>&1
+
+echo "Program main finish with exit code$? at: $(date)"
+
