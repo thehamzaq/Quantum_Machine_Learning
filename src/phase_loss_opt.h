@@ -8,14 +8,14 @@
 
 #define DEV_N 0.0 //level of noise in operator
 //Normal and Hat noise parameters
-#define THETA_DEV 1.41421356237//M_PI;//phase noise level
+#define THETA_DEV 0.0//M_PI;//phase noise level
 //RTN parameter
-#define Ps 0.5 //probability of telegraph noise
+#define Ps 0.0 //probability of telegraph noise
 //SND parameter
-#define RATIO 1.176959769 //ratio between alpha and sigma
+#define RATIO 0.0 //ratio between alpha and sigma
 //Lognormal parameters
-#define MU 2.2214//variance
-#define THETA 0.2715 //skewness, variance
+#define MU 0.0//variance
+#define THETA 0.0 //skewness, variance
 
 
 #include "problem.h"
@@ -45,6 +45,7 @@ class Phase: public Problem {
         double lower; //The lower bound of the variables
         double upper; //The upper bound of the variables
         double loss; //The photon loss rate
+        double xi; //The constant phase
 
         Rng *gaussian_rng, *uniform_rng;
 
@@ -65,7 +66,7 @@ class Phase: public Problem {
         inline double cal_spart(const int n, const int k, const int N);//N is the same as total number of photon 'num'.
         void WK_state(); //A funtion generating the WK state
         //Measurement functions
-        inline bool noise_outcome(const double phi, const double PHI, const int N); //A function for simulating a photon going through a noisy Mach-Zehnder interferometer.
+        inline bool noise_outcome(const double phi, const double PHI, const double xi, const int N); //A function for simulating a photon going through a noisy Mach-Zehnder interferometer.
         inline void state_loss(const int N); //A function for simulating state change under loss of a photon.
         inline double mod_2PI(double PHI); //A function to perform modulo 2PI on phase.
 

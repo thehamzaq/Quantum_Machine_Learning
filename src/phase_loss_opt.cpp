@@ -20,8 +20,9 @@ Phase::Phase(const int numvar, Rng *gaussian_rng, Rng *uniform_rng):
 
     //Initializing the conditions the simulation uses.
     lower = 0;
-    upper = 2 * M_PI;
+    upper = M_PI;
     loss = 0.0;
+    xi = (7 * M_PI)/11.0;
 
     //Initializing the numbers used by the optimization algorithm.
     num = numvar;
@@ -65,7 +66,7 @@ void Phase::fitness(double *soln, double *fitarray) {
     /*In this particular problem, this function serves as a wrapper to change the loss rate,
     * so that we can test the policy we found in lossless interferometry with a chosen level of loss.
     */
-    loss = 0.2; //This loss rate can be changed by user.
+    loss = 0.0; //This loss rate can be changed by user.
     avg_fitness(soln, num_repeat, fitarray);
     loss = 0.0; //Change back in case the optimization process has to be redone.
     }
@@ -84,6 +85,7 @@ void Phase::avg_fitness(double *soln, const int K, double *fitarray) {
 
     for(k = 0; k < K; ++k) {
         phi = uniform_rng->next_rand(0.0, 1.0) * (upper - lower) + lower;
+        //cout << " phi = " << phi << endl;
         PHI = 0;
         //copy input state: the optimal solution across all compilers is memcpy:
         //nadeausoftware.com/articles/2012/05/c_c_tip_how_copy_memory_quickly
@@ -108,7 +110,7 @@ void Phase::avg_fitness(double *soln, const int K, double *fitarray) {
 		//PHI_in = rand_RTN(PHI,Ps,THETA_DEV);//select if the noise is random telegraph.
 		PHI_in = rand_skewed(PHI, THETA_DEV, RATIO); //select if the noise is skewed normal.
                 PHI_in = mod_2PI(PHI_in);//noisy PHI
-                dect_result = noise_outcome(phi, PHI_in, num - m);
+                dect_result = noise_outcome(phi, PHI_in, xi, num - m);
                 if (dect_result == 0) {
                     PHI = PHI - soln[d++];
                     }
@@ -345,13 +347,13 @@ inline void Phase::sqrtfac(double *fac_mat) {
 /*########### Measurement Functions ###########*/
 /*The following functions are involved in the simulation of the noisy interferometer.*/
 
-inline bool Phase::noise_outcome(const double phi, const double PHI, const int N) {
+inline bool Phase::noise_outcome(const double phi, const double PHI, const double xi, const int N) {
     /*This function computes the output path of a photon from a noisy interferometer
     by computing the probablity of photon coming out of either path.
     This simulation allows for noise in the unitary operation, but we only consider the noise in the phase shift.
     */
     //N is the number of photons currently available, not equal to 'num'
-    const double theta = (phi - PHI) / 2.0;
+    /*const double theta = (phi - PHI) / 2.0;
     const double cos_theta = cos(theta) / sqrt_cache[N];
     const double sin_theta = sin(theta) / sqrt_cache[N];
     //noise in operator: currently not in use
@@ -361,14 +363,48 @@ inline bool Phase::noise_outcome(const double phi, const double PHI, const int N
     const dcmplx U00(sin_theta * oper_n1, -oper_n0 * sin_theta);
     const dcmplx U01(cos_theta, oper_n2 * sin_theta);
     const dcmplx U10(cos_theta, -oper_n2 * sin_theta);
-    const dcmplx U11(sin_theta * oper_n1, sin_theta * oper_n0);
-    int n;
+    const dcmplx U11(sin_theta * oper_n1, sin_theta * oper_n0);*/
+    
+    const double cos_phi = cos(phi) / sqrt_cache[N];
+    const double sin_phi = sin(phi) / sqrt_cache[N];
+    const double cos_PHI = cos(PHI) / sqrt_cache[N];
+    const double sin_PHI = sin(PHI) / sqrt_cache[N];
+    const double cos_xi = cos(xi)/ sqrt_cache[N];
+    const double sin_xi = sin(xi)/ sqrt_cache[N];
+    
+    const dcmplx U00R(sin_phi, 0);
+    const dcmplx U00I(0, sin_phi);
+    const dcmplx U01R(cos_phi, 0);
+    const dcmplx U01I(0, cos_phi); //phi is the first beam splitter transmission
+    const dcmplx U10R(sin_PHI, 0);
+    const dcmplx U10I(0, sin_PHI);
+    const dcmplx U11R(cos_PHI, 0);
+    const dcmplx U11I(0, cos_PHI); //PHI is the second beam splitter transmission. This is the one being controlled
+    const dcmplx PHASEREAL0(cos_xi, 0);
+    const dcmplx PHASEIMAG0(0, cos_xi); //This denotes exp(i xi), the constant phase present in one of the arms
+    const dcmplx PHASEREAL1(sin_xi, 0);
+    const dcmplx PHASEIMAG1(0, sin_xi);
+    const dcmplx aux0(0, PHASEIMAG1.imag() * U01I.imag() * U11I.imag());
+    const dcmplx aux1(0, (U01I.imag() * U10I.imag() + PHASEIMAG0.imag() * U11I.imag() * U00I.imag()));
+    const dcmplx aux2(0, (U11I.imag() * U00I.imag() + PHASEIMAG0.imag() * U01I.imag() * U10I.imag()));
+    const dcmplx aux3(0, PHASEIMAG1.imag() * U00I.imag() * U10I.imag());
+    
+    /*int n;
     double prob = 0.0;
     for (n = 0; n < N; ++n) {
         //if C_0 is measured
         update0[n] = state[n + 1] * U00 * sqrt_cache[n + 1] + state[n] * U01 * sqrt_cache[N - n];
         prob += abs(update0[n] * conj(update0[n]));
-        }
+        }*/
+    
+    int n;
+    double prob = 0.0;
+    for (n = 0; n < N; ++n) {
+        //if C_0 is measured
+        update0[n] = state[n + 1] * sqrt_cache[n + 1] * (PHASEREAL0 * U01R * U11R - U00R * U10R) - state[n] * PHASEREAL1 * U11R * U00R *sqrt_cache[N - n] +
+        state[n + 1] * sqrt_cache[n + 1] * aux0 + state[n] *sqrt_cache[N - n] * aux1;
+        prob += abs(update0[n] * conj(update0[n]));
+    } //FIX CONSTANTS HERE!!!
 
     if (uniform_rng->next_rand(0.0, 1.0) <= prob) {
         //measurement outcome is 0
@@ -383,9 +419,11 @@ inline bool Phase::noise_outcome(const double phi, const double PHI, const int N
         //measurement outcome is 1
         prob = 0;
         for(n = 0; n < N; ++n) {
-            state[n] = state[n + 1] * U10 * sqrt_cache[n + 1] - state[n] * U11 * sqrt_cache[N - n];
+            //state[n] = state[n + 1] * U10 * sqrt_cache[n + 1] - state[n] * U11 * sqrt_cache[N - n];
+            state[n] = state[n] * sqrt_cache[N - n] * (U01R * U11R - PHASEREAL0 * U00R * U10R) - state[n+1] * PHASEREAL1 * U10R * U01R * sqrt_cache[n+1] +
+            state[n+1] * sqrt_cache[n+1] * aux2 - state[n] * sqrt_cache[N-n] * aux3;
             prob += abs(state[n] * conj(state[n]));
-            }
+            } //FIX CONSTANTS HERE!!!
         state[N] = 0;
         prob = 1.0 / sqrt(prob);
         for(n = 0; n < N; ++n) {
@@ -413,22 +451,28 @@ inline void Phase::state_loss(const int N) {
 inline double Phase::mod_2PI(double PHI) {
     /*This function compute the modulo of the phase.
     */
-    while(PHI >= 2 * M_PI) {
-        PHI = PHI - 2 * M_PI;
+    while(PHI >= M_PI) {
+        PHI = PHI - M_PI;
+        //cout << " PHI = " << PHI << endl;
         }
     while (PHI < 0) {
-        PHI = PHI + 2 * M_PI;
+        PHI = PHI + M_PI;
+        //cout << " PHI = " << PHI << endl;
         }
     return PHI;
     }
 
 inline bool Phase::check_policy(double error, double sharp) {
+    return 0;
+} //This is when no loss occurs
+
+//inline bool Phase::check_policy(double error, double sharp) {
     /*This function takes the bias and output the policy type.
     *A policy is considered to be type zero if its error falls within the uncertainty of the scheme.
     *This is the desirable type as its estimate no bias and the policy can be used when loss is presence.
     *In the error falls outside the uncertainty,
     *it is very likely that the estimate has a pi bias and is the type of policy that fails when there is loss.
-    */
+    
     if (sharp == 1.0) {
         throw invalid_argument("sharpness cannot be one.");
         }
@@ -439,10 +483,11 @@ inline bool Phase::check_policy(double error, double sharp) {
     else {
         return 0;
         }
-    }
+    }*/
 
-double Phase::rand_Gaussian(double mean, /*the average theta*/
-				double dev /*deviation for distribution*/
+/*the average theta and deviation for distribution below in Gaussian*/
+double Phase::rand_Gaussian(double mean,
+				double dev
 				){
 	/*creating random number using Box-Muller Method/Transformation*/
 	double Z0;//,Z1;
