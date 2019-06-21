@@ -20,7 +20,7 @@ Phase::Phase(const int numvar, Rng *gaussian_rng, Rng *uniform_rng):
 
     //Initializing the conditions the simulation uses.
     lower = 0;
-    upper = M_PI;
+    upper = M_PI/4;
     loss = 0.0;
     xi = (7 * M_PI)/11.0;
 
@@ -367,8 +367,8 @@ inline bool Phase::noise_outcome(const double phi, const double PHI, const doubl
     
     const double cos_phi = cos(phi) / sqrt_cache[N];
     const double sin_phi = sin(phi) / sqrt_cache[N];
-    const double cos_PHI = cos(PHI) / sqrt_cache[N];
-    const double sin_PHI = sin(PHI) / sqrt_cache[N];
+    const double cos_PHI = cos(M_PI-PHI) / sqrt_cache[N];
+    const double sin_PHI = sin(M_PI-PHI) / sqrt_cache[N];
     const double cos_xi = cos(xi)/ sqrt_cache[N];
     const double sin_xi = sin(xi)/ sqrt_cache[N];
     
@@ -451,12 +451,12 @@ inline void Phase::state_loss(const int N) {
 inline double Phase::mod_2PI(double PHI) {
     /*This function compute the modulo of the phase.
     */
-    while(PHI >= M_PI) {
-        PHI = PHI - M_PI;
+    while(PHI > M_PI/4) {
+        PHI = PHI - M_PI/4;
         //cout << " PHI = " << PHI << endl;
         }
     while (PHI < 0) {
-        PHI = PHI + M_PI;
+        PHI = PHI + M_PI/4;
         //cout << " PHI = " << PHI << endl;
         }
     return PHI;
