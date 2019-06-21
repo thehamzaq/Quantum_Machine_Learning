@@ -1,6 +1,6 @@
-# Evolutionary algorithm for adaptive variable-reflectivity beam-splitter estimation
+# Differential Evolution algorithm for adaptive variable-reflectivity beam-splitter estimation
 
-We implement evolutionary algorithm to the problem of adaptive variable-reflectivity beam-splitter estimation, which is an example of quantum control problems. The aim of this project is to create a library containing modules that streamlines the construction of an optimization algorithm for quantum control problems. Access to modules of optimization algorithms provides the building blocks that users can use to tweak the algorithm to their needs.
+We implement differential evolution algorithm to the problem of adaptive variable-reflectivity beam-splitter estimation, which is an example of quantum control problems. The aim of this project is to create a library containing modules that streamlines the construction of an optimization algorithm for quantum control problems. Access to modules of optimization algorithms provides the building blocks that users can use to tweak the algorithm to their needs.
 
 Features:
 
@@ -75,15 +75,20 @@ Arguments:
 
 If it is run without a configuration file, some default values are taken for all parameters; the exact settings are identical to the one in the provided `default.cfg` file. The configuration file is a plain text file with the name of the parameter on the left, followed by an equation sign surrounded by a space on either side, and a value on the right-hand side. For example, the contents of `default.cfg` are as follows:
 
-    pop_size = 20
+    pop_size = 48
     N_begin = 4
     N_cut = 5
-    N_end = 10
+    N_end = 100
     iter = 100
     iter_begin = 300
     repeat = 10
     output_filename = output.dat
     time_filename = time.dat
+    optimization = de
+    data_end = 93;
+    prev_dev = 0.01;
+    new_dev = 0.25;
+    t_goal = 0.98; 
 
 If you supply a configuration file, but do not set a specific value to every possible option, the default values are again the ones described in `default.cfg`.
 
@@ -162,7 +167,7 @@ Readers are assumed to be familiar with population-based optimization algorithm,
 
 ### User-specified components
 
-The orange boxes correspond to the components in which the users specify before compiling the program. `Phase` class contains the modules for the adaptive variable beam-splitter reflectivity estimation problem, which can be replaced with other problems. To select a problem of choice, replace `Phase()` by the constructor of the class in `main()` in the following line.
+The orange boxes correspond to the components in which the users specify before compiling the program. `Phase` class contains the modules for the adaptive variable beam-splitter reflectivity estimation problem, which can be replaced with other problems. To select a problem of choice, replace `festimation()` by the constructor of the class in `main()` in the following line.
 ```
 problem = new Phase(numvar, gaussian_rng, uniform_rng);
 ```
