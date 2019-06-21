@@ -167,7 +167,7 @@ Readers are assumed to be familiar with population-based optimization algorithm,
 
 ### User-specified components
 
-The orange boxes correspond to the components in which the users specify before compiling the program. `Phase` class contains the modules for the adaptive variable beam-splitter reflectivity estimation problem, which can be replaced with other problems. To select a problem of choice, replace `festimation()` by the constructor of the class in `main()` in the following line.
+The orange boxes correspond to the components in which the users specify before compiling the program. `Phase` class contains the modules for the adaptive variable beam-splitter reflectivity estimation problem, which can be replaced with other problems. To select a problem of choice, replace `Phase()` by the constructor of the class in `main()` in the following line.
 ```
 problem = new Phase(numvar, gaussian_rng, uniform_rng);
 ```
