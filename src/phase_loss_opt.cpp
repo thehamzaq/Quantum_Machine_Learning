@@ -20,7 +20,7 @@ Phase::Phase(const int numvar, Rng *gaussian_rng, Rng *uniform_rng):
 
     //Initializing the conditions the simulation uses.
     lower = 0;
-    upper = M_PI/4;
+    upper = 2*M_PI;
     loss = 0.0;
     xi = (7 * M_PI)/11.0;
 
@@ -86,7 +86,7 @@ void Phase::avg_fitness(double *soln, const int K, double *fitarray) {
     for(k = 0; k < K; ++k) {
         phi = uniform_rng->next_rand(0.0, 1.0) * (upper - lower) + lower;
         //cout << " phi = " << phi << endl;
-        PHI = 0;
+        PHI = 3*(M_PI/2);
         //copy input state: the optimal solution across all compilers is memcpy:
         //nadeausoftware.com/articles/2012/05/c_c_tip_how_copy_memory_quickly
         memcpy(state, input_state, (num + 1)*sizeof(dcmplx));
@@ -451,12 +451,12 @@ inline void Phase::state_loss(const int N) {
 inline double Phase::mod_2PI(double PHI) {
     /*This function compute the modulo of the phase.
     */
-    while(PHI > M_PI/4) {
-        PHI = PHI - M_PI/4;
+    while(PHI > 2* M_PI) {
+        PHI = PHI - 2* M_PI;
         //cout << " PHI = " << PHI << endl;
         }
     while (PHI < 0) {
-        PHI = PHI + M_PI/4;
+        PHI = PHI + 2* M_PI;
         //cout << " PHI = " << PHI << endl;
         }
     return PHI;
