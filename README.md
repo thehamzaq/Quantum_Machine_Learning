@@ -7,11 +7,9 @@ Features:
  * Library in C++
  * Support MPI
  * Support VSL and GPU for random number generation
- * Include modules for particle swarm optimization (PSO) and differential evolution (DE)
- * Include uniform and clustered method of initializing solution candidates
- * Include access to user specified accept-reject criteria
- * Include preliminary support for multi-objective calculation
- * Support Autotools
+ * Includes a module for differential evolution (DE)
+ * Includes uniform and clustered method of initializing solution candidates
+ * Includes access to user specified accept-reject criteria
 
 ## Copyright and license
 This is a free software made available under the [GNU GENERAL PUBLIC LICENSE](http://www.gnu.org/licenses/gpl-3.0.html), which means you can share, modify, and redistribute this software. While we endeavor to make this software as useful and as error-free as possible, we cannot make any such guarantee, and the software is hence released **without any warranty**.
