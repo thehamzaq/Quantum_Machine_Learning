@@ -2,6 +2,12 @@
 
 We implement a supervised learning algorithm to the problem of adaptive variable-reflectivity beam-splitter estimation, which is an example of quantum control problems. The aim of this project is to create a library containing modules that streamlines the construction of an optimization algorithm for quantum control problems. Access to modules of optimization algorithms provides the building blocks that users can use to tweak the algorithm to their needs.
 
+## Associated Thesis
+
+This code accompanies the M.Sc. thesis *Variable Beam-Splitter Reflectivity Estimation for Interferometry* (Hamza Qureshi, University of Calgary, 2020). The thesis is openly available at:
+
+[https://ucalgary.scholaris.ca/items/f65d88e6-50cb-4ef9-8ece-a6de6895717d](https://ucalgary.scholaris.ca/items/f65d88e6-50cb-4ef9-8ece-a6de6895717d)
+
 Features:
 
  * Library in C++
